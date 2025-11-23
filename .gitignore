@@ -1,0 +1,10 @@
+nodenode_modules
+dist
+package-lock.json
+
+/nodenode_modules
+/dist
+/package-lock.json
+
+node_modules/
+dist/
