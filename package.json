@@ -1,0 +1,48 @@
+{
+  "name": "pathdux",
+  "version": "1.1.9",
+  "description": "A simplified Redux state management solution with intelligent path-based updates and smart merging",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "redux",
+    "state-management",
+    "react",
+    "redux-toolkit"
+  ],
+  "author": "Rolando Taipe <finetaype@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "@reduxjs/toolkit": ">=1.5.0",
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/plugin-transform-runtime": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@reduxjs/toolkit": "^1.9.7",
+    "@rollup/plugin-babel": "^6.1.0",
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rollup": "^3.29.5",
+    "rollup-plugin-peer-deps-external": "^2.2.4"
+  }
+}
