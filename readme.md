@@ -1,161 +1,277 @@
-# Pathdux ⚡  
-**Path-based state management for React with smart merging**
+# Pathdux ⚡
 
-Pathdux adds a lightweight layer on top of Redux Toolkit and React Context, letting you update nested state using simple path strings.
+### 🔗 Live Demo
 
-## 🚀 Why Pathdux?
-✅ **Path-based updates** – Read and write state with simple string paths  
-✅ **Smart merging** – Keeps existing properties, only updates what's needed  
-✅ **Minimal API** – `getState()`, `setState()`, and `useState()`  
-✅ **Zero boilerplate** – No reducers, actions, or dispatch in your UI code  
-✅ **Auto sync** – Global ↔ local state synchronization  
-✅ **Auto injection** – `action` prop available in all child components  
+[![Open in CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/wc8mrh?file=/src/App.js)
+
+**Simple and powerful global state for React with intuitive syntax**
+
+Pathdux is a state management library for React that combines the simplicity of local state with the power of global state, using a path-based syntax to access and modify data.
+
+## 🚀 Key Features
+
+- **✅ Simple syntax** - Access state with paths like `"user.profile.name"`
+- **✅ Intuitive operations** - `set`, `get`, `remove`, `push`, and `clear`
+- **✅ Immutable updates** - No side effects
+- **✅ Flexible typing** - Supports objects, arrays, and primitive values
+- **✅ Zero configuration** - Ready to use immediately
 
 ## 📦 Installation
+
 ```bash
 npm install pathdux
 ```
 
 ## ⚡ Quick Start
 
-### 1. Wrap your app
+### 1. Initial Setup
+
 ```jsx
-import { PathduxProvider } from "pathdux";
+import { PathduxProvider } from 'pathdux';
 
 const initialState = {
-  user: { name: "John", age: 30 },
-  text: "Hello, Pathdux!"
+  user: { name: "Ana", age: 28 },
+  todos: [
+    { id: 1, text: "Learn Pathdux", completed: false }
+  ]
 };
+//customize your actions
+const initialActions = ({ State }) => ({
+    user: () => State.get("user")
+    //...
+});
 
-
-<PathduxProvider initialState={initialState}>
-  <App />
-</PathduxProvider>
+function App() {
+  return (
+    <PathduxProvider initialState={initialState} initialActions={initialActions}>
+      <TodoApp />
+    </PathduxProvider>
+  );
+}
 ```
 
-### 2. Use it in components
-The `action` prop is automatically injected into child components.
+### 2. Usage in Components
 
 ```jsx
-function App({ action }) {
-  // Option 1: Pathdux useState (recommended)
-  const [text, setText] = action.useState("text");
+function TodoApp({ State, Action }) {
+  // Get values from state
+  const user = State.get("user");
+  const todos = State.get("todos");
 
-  // Option 2: Direct access
-  const user = action.getState("user");
+  const currentUser = Action.user()
 
+  const toggleTheme = () => {
+    const currentTheme = State.get("app.theme");
+    State.set("app.theme", currentTheme === 'dark' ? 'light' : 'dark');
+  };
+  
   return (
     <div>
-      <input
-        value={text}
-        onChange={e => setText(e.target.value)}
-      />
-      <p>Hello, {user.name}</p>
+      <h1>Hello, {user.name}!</h1>
+      <button onClick={toggleTheme}>
+        Toggle theme
+      </button>
     </div>
   );
 }
 ```
 
-## 🧠 Path Syntax
-| Example | Description |
-|---------|-------------|
-| `"user.name"` | Nested property |
-| `"todos[0]"` | Array index |
-| `"todos[id=42]"` | Match by property |
-| `"todos[]"` | Push into array |
-| `"items[id=1].price"` | Deep nested update |
+## 🛠 Complete API
 
-## 🔥 Smart Merging
-Pathdux never replaces entire objects. It only updates what's necessary.
+### `State.get(path?, defaultValue?)`
+Gets a value from global state.
 
-```javascript
-// Initial state
-const state = {
-  user: {
-    name: "John",
-    email: "john@example.com",
-    profile: { avatar: "img.jpg", theme: "dark" }
-  }
-};
+```jsx
+// Complete state
+const fullState = State.get();
 
-// Smart update
-action.setState("user.profile.theme", "light");
+// Specific value
+const userName = State.get("user.name");
 
-// Result: only 'theme' changes, 'avatar' is preserved
-{
-  user: {
-    name: "John",
-    email: "john@example.com",
-    profile: { avatar: "img.jpg", theme: "light" }
-  }
+// With default value
+const theme = State.get("app.theme", "light");
+```
+
+### `State.set(path, value, options?)`
+Sets a value in the state.
+
+```jsx
+// Simple value
+State.set("user.age", 29);
+
+// Nested object
+State.set("app.settings.theme", "dark");
+
+// With options (noMerge prevents object merging)
+State.set("user.profile", { premium: true }, { noMerge: true });
+```
+
+### `State.push(path, value)`
+Adds elements to an array.
+
+```jsx
+// Add single element
+State.push("todos", { id: 2, text: "New task" });
+
+// Add multiple elements
+State.push("todos", [task1, task2, task3]);
+```
+
+### `State.remove(path)`
+Removes properties or array elements.
+
+```jsx
+// Remove property
+State.remove("user.token");
+
+// Remove from array by index
+State.remove("todos[0]");
+
+// Remove by condition
+State.remove("todos[id=2]");
+```
+
+### `State.clear(path)`
+Clears arrays or objects.
+
+```jsx
+// Empty array
+State.clear("todos");
+
+// Empty object
+State.clear("user.preferences");
+```
+
+## 🎯 Practical Examples
+
+### User Management
+
+```jsx
+function UserProfile({ State, Action }) {
+  const user = State.get("user");
+  
+  const updateName = (name) => {
+    State.set("user.name", name);
+  };
+  
+  const addPreference = (key, value) => {
+    State.push("user.preferences[]", { key, value });
+  };
+  
+  const logout = () => {
+    State.remove("user.token");
+    State.clear("user.session");
+  };
+  
+  return (
+    <div>
+      <input 
+        value={user.name} 
+        onChange={e => updateName(e.target.value)} 
+      />
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
 }
 ```
 
-## 🔄 Global ↔ Local Sync
+### Todo List
 
-**Method 1: `action.useState` (recommended)**
 ```jsx
-const [value, setValue] = action.useState("path.to.state");
-// Changes automatically sync with global state
-```
-
-**Method 2: Manual sync**
-```jsx
-const [local, setLocal] = React.useState(action.getState("path"));
-
-const update = (nextValue) => {
-  action.setState("path", nextValue).update(setLocal);
-};
-```
-
-## 🧩 Custom Actions
-Add your own business logic:
-
-```javascript
-// initialActions.js
-export const initialActions = ({ action, getState }) => ({
-  addTodo: (text) => {
-    action.setState("todos[]", {
+function TodoList({ State, Action }) {
+  const todos = State.get("todos") || [];
+  
+  const addTodo = (text) => {
+    State.push("todos[]", {
       id: Date.now(),
       text,
       completed: false
     });
-  },
+  };
+  
+  const toggleTodo = (id) => {
+    const completed = State.get(`todos[id=${id}].completed`);
+    State.set(`todos[id=${id}].completed`, !completed);
+  };
+  
+  const clearCompleted = () => {
+    const completedIds = todos
+      .filter(todo => todo.completed)
+      .map(todo => todo.id);
+    
+    completedIds.forEach(id => {
+      State.remove(`todos[id=${id}]`);
+    });
+  };
+  
+  return (
+    <div>
+      {todos.map(todo => (
+        <div key={todo.id}>
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => toggleTodo(todo.id)}
+          />
+          {todo.text}
+        </div>
+      ))}
+      <button onClick={clearCompleted}>Clear completed</button>
+    </div>
+  );
+}
+```
 
-  toggleTodo: (id) => {
-    const completed = action.getState(`todos[id=${id}].completed`);
-    action.setState(`todos[id=${id}].completed`, !completed);
+## 🔧 Advanced Configuration
+
+### Custom Actions
+
+```jsx
+const initialActions = ({ State }) => ({
+  // User actions
+  login: (userData) => {
+    State.set("user", userData);
+    State.set("app.isLogged", true);
+  },
+  
+  // Todo actions
+  addTodo: (text) => {
+    const newTodo = {
+      id: Date.now(),
+      text,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+    State.push("todos", newTodo);
+  },
+  
+  // Complex actions
+  resetApp: () => {
+    State.clear("todos");
+    State.set("user.preferences", {});
+    State.set("app.theme", "light");
   }
 });
+
+// In the Provider
+<PathduxProvider 
+  initialState={initialState} 
+  initialActions={initialActions}
+>
+  <App />
+</PathduxProvider>
 ```
 
-## 📐 API Summary
+## 📝 Important Notes
 
-**`action.getState(path?)`**  
-Returns the whole global state or the value at the given path.
+- **Paths with `[]`** are used for arrays: `State.push("todos[]", item)`
+- **Queries with `[key=value]`** to find elements: `State.remove("todos[id=5]")`
+- **All operations** are immutable and safe
 
-**`action.setState(path, value)`**  
-Updates the state at path with smart deep merge.  
-Returns object with `.update(localSetter)` to sync local React state:
+## 🚀 Next Steps
 
-```javascript
-action.setState("text", "Hello").update(setText);
-```
+Pathdux is perfect for applications that need global state without Redux complexity. Start with the basic examples and scale as needed.
 
-**`action.useState(path)`**  
-Hook that returns `[value, setValue]`, similar to `React.useState`, but wired to global state.
-
-## 🎯 When to Use Pathdux
-
-**Great for:**
-- Complex, nested state
-- Dynamic or multi-step forms  
-- Configuration panels
-- Tree-like data and dashboards
-
-**Less ideal for:**
-- Very simple state → just use `useState`
-- Extremely performance-critical, ultra-granular updates
-
+**Issues or suggestions?** Open an issue on GitHub!
 
 **License: MIT**
